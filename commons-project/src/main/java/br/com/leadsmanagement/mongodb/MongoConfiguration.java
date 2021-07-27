@@ -6,11 +6,11 @@ public abstract class MongoConfiguration {
 private static final String CREDENTIALS_TEMPLATE = "%s:%s@";
 	
 	private static final String REPLICASET_RELATED_TEMPLATE = 
-			"&replicaSet=%s"
-			+ "&retryWrites=%s" 
-			+ "&w=%s" 
-			+ "&j=%s" 
-			+ "&readPreference=%s";
+			//"&replicaSet=%s"
+			//+ "&retryWrites=%s" 
+			//+ "&w=%s" 
+			//+ "&j=%s" 
+			"&readPreference=%s";
 
 	public static final String CONNECTION_STRING_TEMPLATE = "%s://%s%s/%s" 
 			+ "?"
@@ -20,7 +20,7 @@ private static final String CREDENTIALS_TEMPLATE = "%s:%s@";
 			
 			+ "%s" // Replicaset Related
 			
-			+ "%s" // Extra Query String
+			//+ "%s" // Extra Query String
 			;
 	
     private MongoConfiguration() {
@@ -38,9 +38,8 @@ private static final String CREDENTIALS_TEMPLATE = "%s:%s@";
         				mongoConfig.getWriteTimeout(),
                         mongoConfig.isSsl(),
         				
-        				getReplicasetRelated(mongoConfig),
-                        
-                        mongoConfig.getExtraQueryString());
+        				getReplicasetRelated(mongoConfig)
+                        );
 
         return connectionUrl;
     }

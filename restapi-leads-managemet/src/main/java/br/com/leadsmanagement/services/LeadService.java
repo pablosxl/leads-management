@@ -5,7 +5,7 @@ import reactor.core.publisher.Mono;
 
 public interface LeadService {
 	
-	public Mono<Lead> create();
+	public Mono<Lead> create(final Lead lead);
 	
 	public Mono<Void> finishLead(final String id);
 }

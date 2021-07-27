@@ -1,7 +1,10 @@
 package br.com.leadsmanagement.pipedrive;
 
+import org.bson.json.JsonObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+
+import com.alibaba.fastjson.JSONObject;
 
 import br.com.leadsmanagement.config.Env;
 
@@ -29,29 +32,37 @@ public class PipeDriveGatewayImpl implements PipeDriveGateway {
 	}
 	
 	@Override
-	public void createDeal(Deal deal) {
+	public ResponseEntity<JSONObject> createDeal(Deal deal) {
 		// TODO Auto-generated method stub
 		
-		ResponseEntity<String> response = this.restTemplate.postForEntity(this.getEndPont(createDealUrl), deal, String.class);
+		ResponseEntity<JSONObject> response = this.restTemplate.postForEntity(this.getEndPont(createDealUrl), deal, JSONObject.class);
+	
+		return response;
 	}
 
 	@Override
-	public void createPerson(Person person) {
+	public ResponseEntity<JSONObject> createPerson(Person person) {
 		// TODO Auto-generated method stub
 		
-		ResponseEntity<String> response = this.restTemplate.postForEntity(this.getEndPont(createPersonUrl), person, String.class);
+		ResponseEntity<JSONObject> response = this.restTemplate.postForEntity(this.getEndPont(createPersonUrl), person, JSONObject.class);
+	
+		return response;
 	}
 
 	@Override
-	public void createOrganization(Organization organization) {
+	public ResponseEntity<JSONObject> createOrganization(Organization organization) {
 		// TODO Auto-generated method stub
-		ResponseEntity<String> response = this.restTemplate.postForEntity(this.getEndPont(createOrganizationUrl), organization, String.class);
+		ResponseEntity<JSONObject> response = this.restTemplate.postForEntity(this.getEndPont(createOrganizationUrl), organization, JSONObject.class);
+		
+		return response;
 	}
 
 	@Override
-	public void createNote(Note note) {
+	public ResponseEntity<JSONObject> createNote(Note note) {
 		// TODO Auto-generated method stub
-		ResponseEntity<String> response = this.restTemplate.postForEntity(this.getEndPont(createNoteUrl), note, String.class);
+		ResponseEntity<JSONObject> response = this.restTemplate.postForEntity(this.getEndPont(createNoteUrl), note, JSONObject.class);
+	
+		return response;
 	}
 
 

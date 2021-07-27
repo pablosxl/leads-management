@@ -1,9 +1,13 @@
 package br.com.leadsmanagement.pipedrive;
 
+import org.springframework.http.ResponseEntity;
+
+import com.alibaba.fastjson.JSONObject;
+
 public interface PipeDriveGateway {
 	
-	public void createDeal(Deal deal);
-	public void createPerson(Person person);
-	public void createOrganization(Organization organization);
-	public void createNote(Note note);
+	public ResponseEntity<JSONObject> createDeal(Deal deal);
+	public ResponseEntity<JSONObject> createPerson(Person person);
+	public ResponseEntity<JSONObject> createOrganization(Organization organization);
+	public ResponseEntity<JSONObject> createNote(Note note);
 }

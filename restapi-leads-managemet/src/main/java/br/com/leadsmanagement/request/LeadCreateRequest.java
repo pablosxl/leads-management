@@ -3,11 +3,15 @@ package br.com.leadsmanagement.request;
 import br.com.leadsmanagement.domain.Phone;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
 
 @Data
 @AllArgsConstructor
+@Getter
+@NoArgsConstructor
 public class LeadCreateRequest {
 	
 	@NotEmpty(message = "O Nome não pode ser nulo")
@@ -19,9 +23,15 @@ public class LeadCreateRequest {
 	@NotEmpty(message = "é necessário informar o site")
 	private String site;
 	
+	@NotEmpty(message = "é necessário informar o email")
+	private String email;
+	
+	
+	private String note;
+	
 	@NotEmpty(message = "é necessário informar um telefone")
-	private Phone phone;
+	private String[] phone;
 	
 	@NotEmpty(message = "é necessário informar o id do usário")
-	private int userId;
+	private String userId;
 }
