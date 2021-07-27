@@ -9,4 +9,5 @@ public class Deal {
 	private String title;
 	private String currency;
 	private int org_id;
+	private String status;
 }

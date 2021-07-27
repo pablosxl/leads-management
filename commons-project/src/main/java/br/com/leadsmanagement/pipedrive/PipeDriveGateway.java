@@ -6,8 +6,8 @@ import com.alibaba.fastjson.JSONObject;
 
 public interface PipeDriveGateway {
 	
-	public ResponseEntity<JSONObject> createDeal(Deal deal);
-	public ResponseEntity<JSONObject> createPerson(Person person);
-	public ResponseEntity<JSONObject> createOrganization(Organization organization);
-	public ResponseEntity<JSONObject> createNote(Note note);
+	public JSONObject createDeal(Deal deal);
+	public JSONObject createPerson(Person person);
+	public JSONObject createOrganization(Organization organization);
+	public JSONObject createNote(Note note);
 }

@@ -7,5 +7,5 @@ public interface LeadService {
 	
 	public Mono<Lead> create(final Lead lead);
 	
-	public Mono<Void> finishLead(final String id);
+	public Mono<Lead> finishLead(final String id, String status);
 }

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 
 @Data
@@ -24,6 +25,7 @@ public class LeadCreateRequest {
 	private String site;
 	
 	@NotEmpty(message = "é necessário informar o email")
+	@Email(message = "email inválido")
 	private String email;
 	
 	

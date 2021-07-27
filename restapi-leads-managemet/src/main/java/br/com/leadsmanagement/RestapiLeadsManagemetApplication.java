@@ -27,12 +27,12 @@ import br.com.leadsmanagement.config.Env;
 import br.com.leadsmanagement.mongodb.MongoConfiguration;
 import br.com.leadsmanagement.mongodb.MongoProperties;
 
-@EnableWebFlux
+//@EnableWebFlux
 @SpringBootApplication
-@AutoConfigureAfter(EmbeddedMongoAutoConfiguration.class)
+//@AutoConfigureAfter(EmbeddedMongoAutoConfiguration.class)
 //@EnableAutoConfiguration(exclude={MongoAutoConfiguration.class})
 //@EnableAutoConfiguration(exclude={MongoAutoConfiguration.class, MongoRepositoriesAutoConfiguration .class,MongoDataAutoConfiguration.class})
-@EnableReactiveMongoRepositories
+//@EnableReactiveMongoRepositories
 public class RestapiLeadsManagemetApplication {
 
 	public static void main(String[] args) {

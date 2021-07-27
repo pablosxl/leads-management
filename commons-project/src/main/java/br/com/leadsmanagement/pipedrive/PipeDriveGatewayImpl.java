@@ -1,9 +1,15 @@
 package br.com.leadsmanagement.pipedrive;
 
 import org.bson.json.JsonObject;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 import br.com.leadsmanagement.config.Env;
@@ -32,37 +38,73 @@ public class PipeDriveGatewayImpl implements PipeDriveGateway {
 	}
 	
 	@Override
-	public ResponseEntity<JSONObject> createDeal(Deal deal) {
+	public JSONObject createDeal(Deal deal) {
 		// TODO Auto-generated method stub
 		
-		ResponseEntity<JSONObject> response = this.restTemplate.postForEntity(this.getEndPont(createDealUrl), deal, JSONObject.class);
-	
-		return response;
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+		
+		MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<String, String>();
+		requestBody.add("title", deal.getTitle());
+		requestBody.add("currency", "USD");
+		requestBody.add("org_id", Integer.toString(deal.getOrg_id()));
+		requestBody.add("status", deal.getStatus());
+		
+		HttpEntity formEntity = new HttpEntity<MultiValueMap<String, String>>(requestBody, headers);
+		
+		ResponseEntity<String> response = this.restTemplate.postForEntity(this.getEndPont(createDealUrl), formEntity, String.class);
+		
+		JSONObject json = JSONObject.parseObject(response.getBody());
+		
+		return json.getJSONObject("data");
 	}
 
 	@Override
-	public ResponseEntity<JSONObject> createPerson(Person person) {
+	public JSONObject createPerson(Person person) {
 		// TODO Auto-generated method stub
 		
-		ResponseEntity<JSONObject> response = this.restTemplate.postForEntity(this.getEndPont(createPersonUrl), person, JSONObject.class);
+		ResponseEntity<String> response = this.restTemplate.postForEntity(this.getEndPont(createPersonUrl), person, String.class);
 	
-		return response;
+		JSONObject json = JSONObject.parseObject(response.getBody());
+		
+		return json.getJSONObject("data");
 	}
 
 	@Override
-	public ResponseEntity<JSONObject> createOrganization(Organization organization) {
+	public JSONObject createOrganization(Organization organization) {
 		// TODO Auto-generated method stub
-		ResponseEntity<JSONObject> response = this.restTemplate.postForEntity(this.getEndPont(createOrganizationUrl), organization, JSONObject.class);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 		
-		return response;
+		MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<String, String>();
+		requestBody.add("name", organization.getName());
+		    
+		HttpEntity formEntity = new HttpEntity<MultiValueMap<String, String>>(requestBody, headers);
+		
+		ResponseEntity<String> response = this.restTemplate.postForEntity(this.getEndPont(createOrganizationUrl), formEntity, String.class);
+		
+		JSONObject json = JSONObject.parseObject(response.getBody());
+		
+		return json.getJSONObject("data");
 	}
 
 	@Override
-	public ResponseEntity<JSONObject> createNote(Note note) {
+	public JSONObject createNote(Note note) {
 		// TODO Auto-generated method stub
-		ResponseEntity<JSONObject> response = this.restTemplate.postForEntity(this.getEndPont(createNoteUrl), note, JSONObject.class);
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+		
+		MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<String, String>();
+		requestBody.add("content", note.getContent());
+		requestBody.add("deal_id", Integer.toString(note.getDeal_id()));
+		    
+		HttpEntity formEntity = new HttpEntity<MultiValueMap<String, String>>(requestBody, headers);
+		ResponseEntity<String> response = this.restTemplate.postForEntity(this.getEndPont(createNoteUrl), formEntity, String.class);
 	
-		return response;
+		JSONObject json = JSONObject.parseObject(response.getBody());
+		
+		return json.getJSONObject("data");
 	}
 
 

@@ -8,5 +8,6 @@ import lombok.Data;
 public class Note {
 	
 	private String content;
+	private int deal_id;
 	
 }

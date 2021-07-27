@@ -15,6 +15,8 @@ import br.com.leadsmanagement.pipedrive.Organization;
 import br.com.leadsmanagement.pipedrive.Person;
 import br.com.leadsmanagement.pipedrive.PipeDriveGateway;
 import br.com.leadsmanagement.pipedrive.PipeDriveGatewayImpl;
+import br.com.leadsmanagement.problemdetails.ConflictException;
+import br.com.leadsmanagement.problemdetails.NotFoundException;
 import br.com.leadsmanagement.repositories.LeadRepository;
 import lombok.AllArgsConstructor;
 import reactor.core.publisher.Mono;
@@ -27,55 +29,62 @@ public class LeadServiceImpl implements LeadService {
 	
 	private LeadRepository leadRepository;
 	private PhoneService phoneService;
+	private UserService userService;
 	
 	@Override
 	public Mono<Lead> create(final Lead lead) {
 		// TODO Auto-generated method stub
 		
-		Mono<Lead> leadExists = this.verifyExistLead(lead);
-		
-		return leadExists.flatMap(result -> {
-			
-			if(result == null) {
-				return leadRepository.insert(lead).doOnNext(value -> {
+		return this.leadRepository.getLeadByEmail(lead.getEmail())
+				.flatMap(result -> {
+					if(result.getStatus().equals(LeadStatusEnum.LOST.getDescription()) || result.getStatus().equals(LeadStatusEnum.WON.getDescription()))
+						return this.updateLead(result.get_id().toHexString(), lead);
 					
-					if(!value.getPhone().isEmpty()) {
-						value.getPhone().forEach(item -> {
-							item.setLeadId(value.get_id());
-							this.phoneService.create(item);
-						});
-					}
-					
-					
-				});
-			} else {
-				return this.updateLead(result.get_id().toHexString(), lead);
-			}
-		});
-		
+					return Mono.just(result);
+				})
+				.switchIfEmpty(
+					  this.leadRepository.insert(lead).flatMap(value -> {
+						
+						if(!value.getPhone().isEmpty()) { 
+							value.getPhone().forEach(item -> {
+								item.setLeadId(value.get_id());
+								
+								 this.phoneService.create(item).subscribe();
+							});
+						}
+						
+						return Mono.just(value);
+				})
+		);
 	}
 
 	@Override
-	public Mono<Void> finishLead(final String id) {
+	public Mono<Lead> finishLead(final String id, String status) {
 		// TODO Auto-generated method stub
 		
-		leadRepository.findById(id).subscribe(item -> {
-			item.setStatus(LeadStatusEnum.LOST.getDescription());
+		return this.leadRepository.findById(id).flatMap(item -> {
 			
-			leadRepository.save(item);
-		});
-		
-		return Mono.empty();
-	}
-	
-	private Mono<Lead> verifyExistLead(Lead lead) {
-		
-		return this.leadRepository.getLeadByEmail(lead.getEmail())
-				.map(item -> item);
+			if(item.getStatus().equals(LeadStatusEnum.LOST.getDescription()) || item.getStatus().equals(LeadStatusEnum.WON.getDescription()))
+				return Mono.error(new ConflictException("O lead já foi finalizado"));
+			
+			if(LeadStatusEnum.getDescriptionByName(status).equals(null))
+				return Mono.error(new ConflictException("status inválido"));
+				
+			item.setStatus(LeadStatusEnum.getDescriptionByName(status));
+			
+			
+			
+			return this.leadRepository.save(item).flatMap(result -> {
+				
+				if(LeadStatusEnum.getDescriptionByName(status).equals(LeadStatusEnum.WON.getDescription()))
+					this.getUserAndcreatePipeDriveDeal(item).subscribe();
+				return Mono.just(result);
+			});
+		})
+		.switchIfEmpty(Mono.error(new Throwable("Error ao atualizar o Lead")));
 	}
 	
 	private Mono<Lead> updateLead(String leadId, Lead lead) {
-		
 		return this.leadRepository.findById(leadId).flatMap(value -> {
 			
 			if(lead.getCompany() != null)
@@ -87,15 +96,18 @@ public class LeadServiceImpl implements LeadService {
 			if(lead.getName() != null)
 				value.setName(lead.getName());
 			
-			if(!lead.getPhone().isEmpty()) {
-				/*
-				 * lead.getPhone().forEach(item -> { this.updatePhone(item.getNumber(),
-				 * item.getLeadId()); });
-				 */
+			if(lead.getNote() != null)
+				value.setNote(lead.getNote());
+			
+			if(!value.getPhone().isEmpty()) {
+				 value.getPhone().forEach(item -> {
+					item.setLeadId(value.get_id());
+					 this.phoneService.create(item).subscribe();
+				});
 			}
 			
 			if(lead.getSite() != null)
-				value.setSite(lead.getStatus());
+				value.setSite(lead.getSite());
 			
 			if(lead.getUserId() != null)
 				value.setUserId(lead.getUserId());
@@ -104,26 +116,30 @@ public class LeadServiceImpl implements LeadService {
 		});
 	}
 	
-	private void updatePhone(final String number, final ObjectId leadId) {
-		this.phoneService.update(number, leadId);
-	}
-	
-	private ResponseEntity<String> createPipeDriveDeal(Lead lead, User user) {
-		
-		PipeDriveGateway pipeDriveGateway = new PipeDriveGatewayImpl();
-		
-		Organization organization = new Organization(lead.getCompany(), lead.getSite());
-		ResponseEntity<JSONObject> organizationResponse = pipeDriveGateway.createOrganization(organization);
-		
-		Person person = new Person(user.getName(), user.getEmail());
-		ResponseEntity<JSONObject> personResponse = pipeDriveGateway.createPerson(person);
-		
-		Deal deal = new Deal(lead.getName(), "USD", 0);
-		ResponseEntity<JSONObject> dealResponse = pipeDriveGateway.createDeal(deal);
-		
-		Note note = new Note(lead.getNote());
-		ResponseEntity<JSONObject> noteResponse = pipeDriveGateway.createNote(note);
-		
-		return null;
+	private Mono<Void> getUserAndcreatePipeDriveDeal(Lead lead) {
+		this.userService.getUserById(lead.getUserId().toHexString()).subscribe(user -> {
+			
+			try {
+				PipeDriveGateway pipeDriveGateway = new PipeDriveGatewayImpl();
+				
+				Organization organization = new Organization(lead.getCompany(), lead.getSite());
+				JSONObject organizationResponse = pipeDriveGateway.createOrganization(organization);
+				
+				Person person = new Person(user.getName(), user.getEmail());
+				JSONObject personResponse = pipeDriveGateway.createPerson(person);
+				
+				Deal deal = new Deal(lead.getName(), "USD", organizationResponse.getIntValue("id"), lead.getStatus());
+				JSONObject dealResponse = pipeDriveGateway.createDeal(deal);
+				
+				Note note = new Note(lead.getNote(), dealResponse.getInteger("id"));
+				JSONObject noteResponse = pipeDriveGateway.createNote(note);
+				
+				
+			} catch (Exception ex) {
+				Mono.error(new Throwable("Erro ao interar com o Pipe Drive", ex));
+			}
+			
+		});
+		return Mono.empty();
 	}
 }
