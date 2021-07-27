@@ -1,5 +1,6 @@
 package br.com.leadsmanagement.domain;
 
+
 public enum LeadStatusEnum {
 	
 	OPEN(1, "OPEN", true),
@@ -20,25 +21,25 @@ public enum LeadStatusEnum {
 		return domainId;
 	}
 
-	public void setDomainId(int domainId) {
-		this.domainId = domainId;
-	}
-
 	public String getDescription() {
 		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
 	}
 
 	public boolean isActive() {
 		return active;
 	}
+	
+	public final static String getDescriptionByName(final String name) {
 
-	public void setActive(boolean active) {
-		this.active = active;
+		for (final LeadStatusEnum leadStatusEnum : LeadStatusEnum.values()) {
+			if (leadStatusEnum.getDescription().equals(name.toUpperCase())) {
+				return leadStatusEnum.getDescription();
+			}
+		}
+
+		return null;
 	}
+
 	
 	
 }
